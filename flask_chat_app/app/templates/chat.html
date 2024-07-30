@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Chat Room</h1>
+    <div id="messages">
+        {% for message in messages %}
+            <p><strong>{{ message.user.username }}:</strong> {{ message.content }}</p>
+        {% endfor %}
+    </div>
+    <form id="messageForm">
+        <input type="text" id="messageInput" autocomplete="off" placeholder="Type your message here...">
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        var socket = io();
+        var form = document.getElementById('messageForm');
+        var input = document.getElementById('messageInput');
+        var messages = document.getElementById('messages');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (input.value) {
+                socket.emit('send_message', {
+                    'message': input.value,
+                    'username': "{{ username }}",
+                    'user_id': "{{ current_user.id }}"
+                });
+                input.value = '';
+            }
+        });
+
+        socket.on('receive_message', function(msg) {
+            var item = document.createElement('p');
+            item.innerHTML = '<strong>' + msg.username + ':</strong> ' + msg.content;
+            messages.appendChild(item);
+        });
+    </script>
+</body>
+</html>
